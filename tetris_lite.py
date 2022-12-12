@@ -6,15 +6,28 @@ fps = 25
 window_w, window_h = 600, 500
 block, cup_h, cup_w = 20, 20, 10
 
-side_freq, down_freq = 0.15, 0.1 # передвижение в сторону и вниз
+side_freq, down_freq = 0.15, 0.1  # передвижение в сторону и вниз
 
 side_margin = int((window_w - cup_w * block) / 2)
 top_margin = window_h - (cup_h * block) - 5
 
-colors = ((0, 0, 225), (0, 225, 0), (225, 0, 0), (225, 225, 0)) # синий, зеленый, красный, желтый
-lightcolors = ((30, 30, 255), (50, 255, 50), (255, 30, 30), (255, 255, 30)) # светло-синий, светло-зеленый, светло-красный, светло-желтый
+# синий, зеленый, красный, желтый, бирюзовый, голубой, оранжевый
+colors = ((0, 0, 225), (0, 225, 0), (225, 0, 0), (225, 225, 0), (225, 0, 255), (0, 191, 255), (255, 102, 51))
 
-white, gray, black  = (255, 255, 255), (185, 185, 185), (0, 0, 0)
+# светло-синий, светло-зеленый, светло-красный, светло-желтый,  светло-бирюзовый, светло-голубой, светло-оранжевый
+lightcolors = ((30, 30, 255), (50, 255, 50), (255, 30, 30), (255, 255, 30), (255, 30, 255), (135, 206, 250), (255,
+                                                                                                              153, 51))
+
+# colors =   0-синий, 1-зеленый, 2-красный, 3-желтый, 4-бирюзовый, 5-голубой, 6-оранжевый
+color_figures = {'S': 2,
+                 'Z': 5,
+                 'J': 4,
+                 'L': 3,
+                 'I': 1,
+                 'O': 6,
+                 'T': 0}
+
+white, gray, black = (255, 255, 255), (185, 185, 185), (0, 0, 0)
 brd_color, bg_color, txt_color, title_color, info_color = white, black, white, colors[3], colors[0]
 
 fig_w, fig_h = 5, 5
@@ -116,10 +129,12 @@ figures = {'S': [['ooooo',
                   'ooxoo',
                   'ooooo']]}
 
+
 def pauseScreen():
-        pause = pg.Surface((600, 500), pg.SRCALPHA)   
-        pause.fill((0, 0, 255, 127))                        
-        display_surf.blit(pause, (0, 0))
+    pause = pg.Surface((600, 500), pg.SRCALPHA)
+    pause.fill((0, 0, 255, 127))
+    display_surf.blit(pause, (0, 0))
+
 
 def main():
     global fps_clock, display_surf, basic_font, big_font
@@ -130,7 +145,7 @@ def main():
     big_font = pg.font.SysFont('verdana', 45)
     pg.display.set_caption('Тетрис Lite')
     showText('Тетрис Lite')
-    while True: # начинаем игру
+    while True:  # начинаем игру
         runTetris()
         pauseScreen()
         showText('Игра закончена')
@@ -141,7 +156,7 @@ def runTetris():
     last_move_down = time.time()
     last_side_move = time.time()
     last_fall = time.time()
-    going_down = False 
+    going_down = False
     going_left = False
     going_right = False
     points = 0
@@ -149,18 +164,17 @@ def runTetris():
     fallingFig = getNewFig()
     nextFig = getNewFig()
 
-    while True: 
+    while True:
         if fallingFig == None:
             # если нет падающих фигур, генерируем новую
             fallingFig = nextFig
             nextFig = getNewFig()
             last_fall = time.time()
-            
 
             if not checkPos(cup, fallingFig):
-                return # если на игровом поле нет свободного места - игра закончена
+                return  # если на игровом поле нет свободного места - игра закончена
         quitGame()
-        for event in pg.event.get(): 
+        for event in pg.event.get():
             if event.type == KEYUP:
                 if event.key == K_SPACE:
                     pauseScreen()
@@ -224,14 +238,13 @@ def runTetris():
             fallingFig['y'] += 1
             last_move_down = time.time()
 
-
-        if time.time() - last_fall > fall_speed: # свободное падение фигуры            
-            if not checkPos(cup, fallingFig, adjY=1): # проверка "приземления" фигуры
-                addToCup(cup, fallingFig) # фигура приземлилась, добавляем ее в содержимое стакана
+        if time.time() - last_fall > fall_speed:  # свободное падение фигуры
+            if not checkPos(cup, fallingFig, adjY=1):  # проверка "приземления" фигуры
+                addToCup(cup, fallingFig)  # фигура приземлилась, добавляем ее в содержимое стакана
                 points += clearCompleted(cup)
                 level, fall_speed = calcSpeed(points)
                 fallingFig = None
-            else: # фигура пока не приземлилась, продолжаем движение вниз
+            else:  # фигура пока не приземлилась, продолжаем движение вниз
                 fallingFig['y'] += 1
                 last_fall = time.time()
 
@@ -271,7 +284,7 @@ def showText(text):
     titleSurf, titleRect = txtObjects(text, big_font, title_color)
     titleRect.center = (int(window_w / 2) - 3, int(window_h / 2) - 3)
     display_surf.blit(titleSurf, titleRect)
-   
+
     pressKeySurf, pressKeyRect = txtObjects('Нажмите любую клавишу для продолжения', basic_font, title_color)
     pressKeyRect.center = (int(window_w / 2), int(window_h / 2) + 100)
     display_surf.blit(pressKeySurf, pressKeyRect)
@@ -282,12 +295,12 @@ def showText(text):
 
 
 def quitGame():
-    for event in pg.event.get(QUIT): # проверка всех событий, приводящих к выходу из игры
-        stopGame() 
-    for event in pg.event.get(KEYUP): 
+    for event in pg.event.get(QUIT):  # проверка всех событий, приводящих к выходу из игры
+        stopGame()
+    for event in pg.event.get(KEYUP):
         if event.key == K_ESCAPE:
-            stopGame() 
-        pg.event.post(event) 
+            stopGame()
+        pg.event.post(event)
 
 
 def calcSpeed(points):
@@ -296,14 +309,15 @@ def calcSpeed(points):
     fall_speed = 0.27 - (level * 0.02)
     return level, fall_speed
 
+
 def getNewFig():
     # возвращает новую фигуру со случайным цветом и углом поворота
     shape = random.choice(list(figures.keys()))
     newFigure = {'shape': shape,
-                'rotation': random.randint(0, len(figures[shape]) - 1),
-                'x': int(cup_w / 2) - int(fig_w / 2),
-                'y': -2, 
-                'color': random.randint(0, len(colors)-1)}
+                 'rotation': random.randint(0, len(figures[shape]) - 1),
+                 'x': int(cup_w / 2) - int(fig_w / 2),
+                 'y': -2,
+                 'color': color_figures[shape]}
     return newFigure
 
 
@@ -339,6 +353,7 @@ def checkPos(cup, fig, adjX=0, adjY=0):
                 return False
     return True
 
+
 def isCompleted(cup, y):
     # проверяем наличие полностью заполненных рядов
     for x in range(cup_w):
@@ -350,17 +365,17 @@ def isCompleted(cup, y):
 def clearCompleted(cup):
     # Удаление заполенных рядов и сдвиг верхних рядов вниз
     removed_lines = 0
-    y = cup_h - 1 
+    y = cup_h - 1
     while y >= 0:
         if isCompleted(cup, y):
-           for pushDownY in range(y, 0, -1):
+            for pushDownY in range(y, 0, -1):
                 for x in range(cup_w):
-                    cup[x][pushDownY] = cup[x][pushDownY-1]
-           for x in range(cup_w):
+                    cup[x][pushDownY] = cup[x][pushDownY - 1]
+            for x in range(cup_w):
                 cup[x][0] = empty
-           removed_lines += 1
+            removed_lines += 1
         else:
-            y -= 1 
+            y -= 1
     return removed_lines
 
 
@@ -369,7 +384,7 @@ def convertCoords(block_x, block_y):
 
 
 def drawBlock(block_x, block_y, color, pixelx=None, pixely=None):
-    #отрисовка квадратных блоков, из которых состоят фигуры
+    # отрисовка квадратных блоков, из которых состоят фигуры
     if color == empty:
         return
     if pixelx == None and pixely == None:
@@ -377,10 +392,12 @@ def drawBlock(block_x, block_y, color, pixelx=None, pixely=None):
     pg.draw.rect(display_surf, colors[color], (pixelx + 1, pixely + 1, block - 1, block - 1), 0, 3)
     pg.draw.rect(display_surf, lightcolors[color], (pixelx + 1, pixely + 1, block - 4, block - 4), 0, 3)
     pg.draw.circle(display_surf, colors[color], (pixelx + block / 2, pixely + block / 2), 5)
-    
+
+
 def gamecup(cup):
     # граница игрового поля-стакана
-    pg.draw.rect(display_surf, brd_color, (side_margin - 4, top_margin - 4, (cup_w * block) + 8, (cup_h * block) + 8), 5)
+    pg.draw.rect(display_surf, brd_color, (side_margin - 4, top_margin - 4, (cup_w * block) + 8, (cup_h * block) + 8),
+                 5)
 
     # фон игрового поля
     pg.draw.rect(display_surf, bg_color, (side_margin, top_margin, block * cup_w, block * cup_h))
@@ -388,15 +405,15 @@ def gamecup(cup):
         for y in range(cup_h):
             drawBlock(x, y, cup[x][y])
 
+
 def drawTitle():
     titleSurf = big_font.render('Тетрис Lite', True, title_color)
     titleRect = titleSurf.get_rect()
     titleRect.topleft = (window_w - 425, 30)
     display_surf.blit(titleSurf, titleRect)
-    
+
 
 def drawInfo(points, level):
-
     pointsSurf = basic_font.render(f'Баллы: {points}', True, txt_color)
     pointsRect = pointsSurf.get_rect()
     pointsRect.topleft = (window_w - 550, 180)
@@ -411,18 +428,19 @@ def drawInfo(points, level):
     pausebRect = pausebSurf.get_rect()
     pausebRect.topleft = (window_w - 550, 420)
     display_surf.blit(pausebSurf, pausebRect)
-    
+
     escbSurf = basic_font.render('Выход: Esc', True, info_color)
     escbRect = escbSurf.get_rect()
     escbRect.topleft = (window_w - 550, 450)
     display_surf.blit(escbSurf, escbRect)
 
+
 def drawFig(fig, pixelx=None, pixely=None):
     figToDraw = figures[fig['shape']][fig['rotation']]
-    if pixelx == None and pixely == None:    
+    if pixelx == None and pixely == None:
         pixelx, pixely = convertCoords(fig['x'], fig['y'])
 
-    #отрисовка элементов фигур
+    # отрисовка элементов фигур
     for x in range(fig_w):
         for y in range(fig_h):
             if figToDraw[y][x] != empty:
@@ -434,7 +452,7 @@ def drawnextFig(fig):  # превью следующей фигуры
     nextRect = nextSurf.get_rect()
     nextRect.topleft = (window_w - 150, 180)
     display_surf.blit(nextSurf, nextRect)
-    drawFig(fig, pixelx=window_w-150, pixely=230)
+    drawFig(fig, pixelx=window_w - 150, pixely=230)
 
 
 if __name__ == '__main__':
