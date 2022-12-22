@@ -1,3 +1,5 @@
+import datetime
+
 import pygame as pg
 import random, time, sys
 from pygame.locals import *
@@ -172,6 +174,10 @@ def runTetris():
             last_fall = time.time()
 
             if not checkPos(cup, fallingFig):
+                # сделать запись о рейтинге
+                gameover_result = str(datetime.datetime.now()) + ' - строк:' + str(points) + ' Уровень:' + str(
+                    level) + '\n'
+                with open('score.txt', 'a+') as modified: modified.write(gameover_result)
                 return  # если на игровом поле нет свободного места - игра закончена
         quitGame()
         for event in pg.event.get():
@@ -306,7 +312,7 @@ def quitGame():
 def calcSpeed(points):
     # вычисляет уровень
     level = int(points / 10) + 1
-    fall_speed = 0.27 - (level * 0.02)
+    fall_speed = 0.27 - (level * 0.015)
     return level, fall_speed
 
 
